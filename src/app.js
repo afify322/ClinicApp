@@ -1,6 +1,7 @@
 const express=require("express")
 const app=express()
 const bodyparser=require("body-parser")
+const cors=require('cors')
 require("./db/mongoose")
 const admin=require("./routes/admin")
 const patient=require("./routes/patient")
@@ -9,7 +10,7 @@ const port=process.env.PORT ||3000
 //const multer=require("multer")
 //const upload=multer()
 const auth=require("./middleware/auth").auth
-
+app.use(cors())
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: false }))
 
