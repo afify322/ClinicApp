@@ -5,6 +5,8 @@ const cors=require('cors')
 require("./db/mongoose")
 const admin=require("./routes/admin")
 const patient=require("./routes/patient")
+const clerk=require("./routes/clerk")
+
 
 const port=process.env.PORT ||3000
 //const multer=require("multer")
@@ -26,7 +28,7 @@ app.use(bodyparser.urlencoded({ extended: false }))
   });  
 app.use(multer({storage:storage}).single("image"))*/
 
-
+app.use("/clerk",clerk)
 app.use("/patient",patient)
 app.use("/Admin",admin)
 app.listen(port)
