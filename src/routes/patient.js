@@ -4,7 +4,6 @@ const multer=require("multer")
 const exist=require("../middleware/auth").exist
 const auth=require("../middleware/auth").auth
 const patient=require("../controller/patient").ADdpatient
-const Getpatients=require("../controller/patient").Getpatients
 const Deletepatient=require("../controller/patient").Deletepatient
 const FindPatient=require("../controller/patient").FindPatient
 const UpdadtePatient=require("../controller/patient").UpdadtePatient
@@ -15,12 +14,12 @@ const GetMed=require("../controller/patient").GetMed
 const GetTests=require("../controller/patient").GetTests
 const CountMed=require("../controller/patient").CountMed
 const CountTests=require("../controller/patient").CountTests
-
+const UpdateMed=require("../controller/patient").UpdateMed
+const UpdateTest=require("../controller/patient").UpdateTest
 
 
 
 router.post("/AddPatient",exist,patient)
-router.get("/GetPatients",Getpatients)
 router.delete("/DeletePatient",Deletepatient)
 router.get("/FindPatient",FindPatient)
 router.patch("/UpdadtePatient",UpdadtePatient)
@@ -31,6 +30,8 @@ router.get("/GetMed",GetMed)
 router.get("/GetTests",GetTests)
 router.get("/CountMed",CountMed)
 router.get("/CountTests",CountTests)
+router.patch("/UpdateMed",UpdateMed)
+router.patch("/UpdateTest",UpdateTest)
 
 
 module.exports=router

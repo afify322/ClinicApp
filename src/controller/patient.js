@@ -1,5 +1,4 @@
 const patient=require("../models/patient")
-const firebase=require("firebase")
 const mongoose = require("mongoose");
 const medicine=require("../models/Medicine").medicine
 const test=require("../models/Tests").test
@@ -27,21 +26,6 @@ return res.status(201).send({Error_Flag:0,message:"Patient was created successfu
 
 
 }
-exports.Getpatients=(req,res,next)=>{
-  let page=req.query.page
-  
-    patient.find().countDocuments().then((num)=>{
-        DocNum=num;
-        return patient.find().populate("Medicines _id","name").skip((page-1)*items_per_page).limit(items_per_page)
-    })
-    .then((data)=>{
-       
-
-     res.status(200).send({Error_Flag:0,Patients:data,last_page:Math.ceil(DocNum/items_per_page)})
-    }).catch((error)=>{
-        res.status(500).send({Error_Flag:1,message:error.message})
-    })
-}
 exports.Deletepatient=(req,res,next)=>{
     patient.findByIdAndDelete(req.body.id).then((data)=>{
         if(data){
@@ -60,7 +44,12 @@ exports.FindPatient=async(req,res,next)=>{
     let page=req.query.page
         try {
            let doc=await patient.find().countDocuments()
-           patient.find({Name:{$regex: req.query.name??"", $options: "i" },Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },Gender:{$regex: req.query.gender??"", $options: "i" },Phone:{$regex: req.query.phone??"", $options: "i" }}).skip((page-1)*items_per_page).limit(items_per_page).then((data)=>{
+           patient.find({Name:{$regex: req.query.name??"", $options: "i" },
+           Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
+           Gender:{$regex: req.query.gender??"", $options: "i" },
+           Phone:{$regex: req.query.phone??"", $options: "i" }}).select("Name _id Age Phone Gender Address ").populate("medicines._id Tests._id","name")
+           .skip((page-1)*items_per_page).limit(items_per_page).exec()
+           .then((data)=>{
                if(data.length==0){
                   return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
      
@@ -106,7 +95,6 @@ exports.Count=(req,res,next)=>{
 exports.AddMed=async(req,res,next)=>{
         let UserId=req.body.id
         let UserId1=mongoose.Types.ObjectId(UserId)
-        let med={_id:UserId1}
         try {
       let data=await patient.findOne({_id:req.body.id})
        let obj={_id:new mongoose.Types.ObjectId,date:req.body.date,dose:req.body.dose,name:req.body.name}
@@ -303,3 +291,36 @@ exports.CountTests=(req,res)=>{
     res.status(200).send({Error_Flag:0,counter:docs})
    }) 
 }
+exports.UpdateMed=async(req,res)=>{
+    try {
+        let a=await medicine.findOneAndUpdate({_id:req.body.id},{name:req.body.name})
+        if(a){
+          res.status(200).send({Error_Flag:0,message:"Updated Successfuly",Medicine:a.name})
+        }
+        res.status(200).send({Error_Flag:1,message:"Check the id of Medicine "})
+
+
+    } catch (error) {
+        res.status(200).send({Error_Flag:1,message:error.message})
+
+    }
+
+}
+exports.UpdateTest=async(req,res)=>{
+    try {
+        let a=await test.findOneAndUpdate({_id:req.body.id},{name:req.body.name})
+        if(a){
+         return res.status(200).send({Error_Flag:0,message:"Updated Successfuly",Test:a.name})
+        }
+      return res.status(200).send({Error_Flag:1,message:"Check the id of Medicine "})
+
+
+    } catch (error) {
+       return res.status(200).send({Error_Flag:1,message:error.message})
+
+    }
+
+}
+ exports.Book=(req,res)=>{
+
+} 
