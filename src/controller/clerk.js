@@ -2,7 +2,6 @@ const clerk=require('../models/clerk')
 const attend=require('../models/attendance')
 const moment=require('moment')
 const mongoose = require('mongoose')
-const { count } = require('../models/clerk')
 const items_per_page=10
 
 exports.AddClerk=async(req,res)=>{
@@ -35,7 +34,6 @@ exports.FindClerk=async(req,res)=>{
   
         let page=req.query.page
             try {
-               let doc=await clerk.find().countDocuments()
                clerk.find({name:{$regex: req.query.name??"", $options: "i" },
                age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
                gender:{$regex: req.query.gender??"", $options: "i" },
@@ -47,7 +45,7 @@ exports.FindClerk=async(req,res)=>{
          
                    }
                    else{
-                      return res.status(200).send({Error_Flag:0,Clerks:data,last_page:Math.ceil(doc/items_per_page)})
+                      return res.status(200).send({Error_Flag:0,Clerks:data,last_page:Math.ceil(data.length/items_per_page)})
         
                    }
                
@@ -113,8 +111,7 @@ exports.Attended=async(req,res)=>{
                 let d=new Date(attenddata.attend_date.toString()).getDay()
                 let a=moment(moment().format())
                 let b=moment(attenddata.attend_date)
-                let sol=a.diff(b,'minutes')
-                let n= parseFloat(temp(sol))
+                let sol=a.diff(b,'seconds')
                 
                 if(d!=moment().day()){
                     return res.status(400).send({Error_Flag:1,message:"Please Attend First"})
@@ -125,9 +122,9 @@ exports.Attended=async(req,res)=>{
                      
                        let a= await clerk.findOne({_id:req.body.id})
                        console.log(a)
-                        await clerk.findByIdAndUpdate(req.body.id,{current_status:"left",total_hours:a.total_hours+n})
+                        await clerk.findByIdAndUpdate(req.body.id,{current_status:"left",total_hours:a.total_hours+sol})
         
-                        await attend.findOneAndUpdate({clerk:req.body.id},{leave_date:moment().format(),hours_of_work:n})
+                        await attend.findOneAndUpdate({clerk:req.body.id},{leave_date:moment().format(),seconds_of_work:sol})
             
                         return res.status(200).send({Error_Flag:0,message:"Clerk left succesfuly",hours_of_work:n})
                
@@ -178,19 +175,4 @@ exports.Count=(req,res)=>{
             res.status(400).send({Error_Flag:1,message:err.message})
 
         })
-}
-function temp(min){
-    let i=0;
-    let r=min%60
-    if(r==0){
-        return `${min/60}`
-    }else{
-        while(min>60){
-            min=min-60;
-            i++
-        }
-        return `${i}.${min}`
-    }
-  
-  
 }

@@ -65,7 +65,7 @@ Prev_visit:{
 
 },
 Next_visit:{
-    type:String
+    type:Date
     
 },
 

@@ -29,7 +29,7 @@ const clerk=mongoose.Schema({
         type:String,
         
     },
-    total_hours:{
+    seconds_of_work:{
         type:Number,
         default:0
     },

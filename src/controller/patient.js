@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const medicine=require("../models/Medicine").medicine
 const test=require("../models/Tests").test
 const cloudinary = require('cloudinary').v2
+const book=require('../models/booking')
+const moment=require("moment")
 cloudinary.config({
     cloud_name: "dquzcc6kw",
     api_key: "956728166899899",
@@ -43,7 +45,6 @@ exports.Deletepatient=(req,res,next)=>{
 exports.FindPatient=async(req,res,next)=>{
     let page=req.query.page
         try {
-           let doc=await patient.find().countDocuments()
            patient.find({Name:{$regex: req.query.name??"", $options: "i" },
            Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
            Gender:{$regex: req.query.gender??"", $options: "i" },
@@ -51,11 +52,11 @@ exports.FindPatient=async(req,res,next)=>{
            .skip((page-1)*items_per_page).limit(items_per_page).exec()
            .then((data)=>{
                if(data.length==0){
-                  return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
+                  return res.status(400).send({Error_Flag:0,Patients:"Not Found"})
      
                }
                else{
-                  return res.status(200).send({rsError_Flag:0,Patients:data,last_page:Math.ceil(doc/items_per_page)})
+                  return res.status(200).send({rsError_Flag:0,Patients:data,last_page:Math.ceil(data.length/items_per_page)})
     
                }
            
@@ -321,6 +322,81 @@ exports.UpdateTest=async(req,res)=>{
     }
 
 }
- exports.Book=(req,res)=>{
+exports.reservation=async(req,res)=>{
+      try {
+         let data=await book.find({patient:req.body.id,status:"pending"})
+        if(!data.length==0 ){
+            return res.status(400).send({Error_Flag:1,message:"Reservation is Alreeady Exist Please Confirm The last one first "})
+        }
+        else{
+            let patientd=await patient.findByIdAndUpdate(req.body.id,{Prev_visit:moment().format()})
+            let book1= await new book({patient:req.body.id,cost:req.body.cost,notes:req.body.notes,status:"pending",name:patientd.Name}).save()
+            return res.status(201).send({Error_Flag:0,reservation:book1})
 
-} 
+        }
+      } catch (error) {
+        return res.status(400).send({Error_Flag:0,reservation:error.message})
+
+      }
+      
+   
+}  
+exports.Confirmreservation=async(req,res)=>{
+    
+    try {
+     
+        let data=await book.findOne({patient:req.body.id,status:"pending"})
+        
+        if(!data){
+            return res.status(400).send({Error_Flag:0,message:"Reservation Not Found"})
+    
+          }
+       else{
+        let patientd=await patient.findByIdAndUpdate(req.body.id,{Prev_visit:moment().format(),Next_visit:req.body.next_visit})
+
+         let b= await book.findOneAndUpdate({patient:req.body.id,status:"pending"},req.body)
+      
+
+         return res.status(200).send({Error_Flag:1,message:"Confirmed Successfuly"})
+      }
+      
+      
+    } catch (error) {
+      return res.status(400).send({Error_Flag:0,message:error.message})
+
+    }
+    
+ 
+}  
+exports.Getreservations=async(req,res)=>{
+    let page=req.query.page;
+  
+     let doc=await book.find().countDocuments()
+       book.find({status:{$regex: req.query.status??"", $options: "i" },
+            cost:{ $gte: req.query.cost??0, $lte: req.query.cost??10000 },
+            name:{$regex:req.query.name??'',$options:"i"}})
+            .select("patient cost status notes created_at updated_at")
+            .populate('patient',"Name Age Phone")
+            .skip((page-1)*items_per_page)
+            .limit(items_per_page).exec().then((data)=>{
+                if(data.length==0){
+                    return res.status(200).send({Error_Flag:0,reservation:"Not Found"})
+  
+                }
+                else{
+                    return res.status(200).send({Error_Flag:0,reservation:data,last_page:Math.ceil(data.length/items_per_page)})
+
+                }
+
+            }).catch((err)=>{
+                return res.status(400).send({Error_Flag:1,message:err.message})
+
+            })
+
+     
+        
+  
+}
+/* exports.Deletereservation=(req,res)=>{
+
+} */

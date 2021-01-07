@@ -16,7 +16,9 @@ const CountMed=require("../controller/patient").CountMed
 const CountTests=require("../controller/patient").CountTests
 const UpdateMed=require("../controller/patient").UpdateMed
 const UpdateTest=require("../controller/patient").UpdateTest
-
+const reservation=require("../controller/patient").reservation
+const Confirmreservation=require("../controller/patient").Confirmreservation
+const Getreservations=require("../controller/patient").Getreservations
 
 
 router.post("/AddPatient",exist,patient)
@@ -32,6 +34,9 @@ router.get("/CountMed",CountMed)
 router.get("/CountTests",CountTests)
 router.patch("/UpdateMed",UpdateMed)
 router.patch("/UpdateTest",UpdateTest)
+router.post("/Reservation",reservation)
+router.patch("/ConfirmReservation",Confirmreservation)
+router.get("/GetReservations",Getreservations)
 
 
 module.exports=router

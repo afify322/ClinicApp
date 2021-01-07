@@ -6,13 +6,14 @@ const book=new mongoose.Schema({
     cost:{
         type:Number
     },
-    prev_visit:{
-        type:String
-    },
-    next_visit:{
-        type:String
-    },
-    notes:String
+   
+    notes:String,
+    status:{
+        type:String,
+        default:"pending"},
+        
+        name:String
     
 
-})
+},{timestamps:true})
+module.exports=mongoose.model('booking',book)
