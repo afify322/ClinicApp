@@ -19,9 +19,10 @@ const UpdateTest=require("../controller/patient").UpdateTest
 const reservation=require("../controller/patient").reservation
 const Confirmreservation=require("../controller/patient").Confirmreservation
 const Getreservations=require("../controller/patient").Getreservations
+const Deletereservation=require("../controller/patient").Deletereservation
+const Cancelreservation=require("../controller/patient").Cancelreservation
 
-
-router.post("/AddPatient",exist,patient)
+router.post("/AddPatient",patient)
 router.delete("/DeletePatient",Deletepatient)
 router.get("/FindPatient",FindPatient)
 router.patch("/UpdadtePatient",UpdadtePatient)
@@ -37,6 +38,8 @@ router.patch("/UpdateTest",UpdateTest)
 router.post("/Reservation",reservation)
 router.patch("/ConfirmReservation",Confirmreservation)
 router.get("/GetReservations",Getreservations)
+router.patch("/Cancelreservation",Cancelreservation)
+router.delete("/Deletereservation",Deletereservation)
 
 
 module.exports=router

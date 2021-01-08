@@ -5,9 +5,9 @@ const attend=mongoose.Schema({
           type:mongoose.Schema.Types.ObjectId,
           ref:"clerk"
          },
-     attend_date:{type:String,default:"Not attended"},
-     leave_date:{type:String,default:"Attended but not left"},
-     hours_of_work:Number
+     attend_date:{type:Date},
+     leave_date:{type:Date},
+     seconds_of_work:Number
   
 })
 module.exports=mongoose.model('attend',attend)

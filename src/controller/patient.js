@@ -5,6 +5,7 @@ const test=require("../models/Tests").test
 const cloudinary = require('cloudinary').v2
 const book=require('../models/booking')
 const moment=require("moment")
+
 cloudinary.config({
     cloud_name: "dquzcc6kw",
     api_key: "956728166899899",
@@ -44,15 +45,17 @@ exports.Deletepatient=(req,res,next)=>{
 }
 exports.FindPatient=async(req,res,next)=>{
     let page=req.query.page
-        try {
+            
            patient.find({Name:{$regex: req.query.name??"", $options: "i" },
            Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
            Gender:{$regex: req.query.gender??"", $options: "i" },
-           Phone:{$regex: req.query.phone??"", $options: "i" }}).select("Name _id Age Phone Gender Address ").populate("medicines._id Tests._id","name")
+           Phone:{$regex: req.query.phone??"", $options: "i" }})
+           .select("Name _id Age Phone Gender Address  Prev_visit Next_visit Notes createdAt updatedAt ")
+           .populate("medicines.medicine Tests.test","name")
            .skip((page-1)*items_per_page).limit(items_per_page).exec()
            .then((data)=>{
                if(data.length==0){
-                  return res.status(400).send({Error_Flag:0,Patients:"Not Found"})
+                  return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
      
                }
                else{
@@ -60,14 +63,10 @@ exports.FindPatient=async(req,res,next)=>{
     
                }
            
-           }).catch((error)=>{
-             return  res.status(404).send({Error_Flag:1,message:error.message})
-           
-           })  
-        } catch (error) {
-         return  res.status(404).send({Error_Flag:1,message:error.message})
-    
-        }
+           }).catch((err)=>{
+               res.status(400).send({Error_Flag:1,message:err.message})
+           })
+      
    
    
 }
@@ -294,26 +293,26 @@ exports.CountTests=(req,res)=>{
 }
 exports.UpdateMed=async(req,res)=>{
     try {
-        let a=await medicine.findOneAndUpdate({_id:req.body.id},{name:req.body.name})
+        let a=await medicine.findOneAndUpdate({_id:req.body.id},{name:req.body.name},{new:true})
         if(a){
-          res.status(200).send({Error_Flag:0,message:"Updated Successfuly",Medicine:a.name})
+          return res.status(200).send({Error_Flag:0,message:"Updated Successfuly",Medicine:a.name})
         }
-        res.status(200).send({Error_Flag:1,message:"Check the id of Medicine "})
+       return  res.status(200).send({Error_Flag:1,message:"Check the id of Medicine "})
 
 
     } catch (error) {
-        res.status(200).send({Error_Flag:1,message:error.message})
+        return res.status(200).send({Error_Flag:1,message:error.message})
 
     }
 
 }
 exports.UpdateTest=async(req,res)=>{
     try {
-        let a=await test.findOneAndUpdate({_id:req.body.id},{name:req.body.name})
+        let a=await test.findOneAndUpdate({_id:req.body.id},{name:req.body.name},{new:true})
         if(a){
          return res.status(200).send({Error_Flag:0,message:"Updated Successfuly",Test:a.name})
         }
-      return res.status(200).send({Error_Flag:1,message:"Check the id of Medicine "})
+      return res.status(200).send({Error_Flag:1,message:"Test Not Found"})
 
 
     } catch (error) {
@@ -345,19 +344,52 @@ exports.Confirmreservation=async(req,res)=>{
     
     try {
      
-        let data=await book.findOne({patient:req.body.id,status:"pending"})
+        let data=await book.findOne({_id:req.body.id,status:"pending"})
         
         if(!data){
-            return res.status(400).send({Error_Flag:0,message:"Reservation Not Found"})
+            return res.status(200).send({Error_Flag:0,message:"Reservation Not Found"})
     
           }
        else{
-        let patientd=await patient.findByIdAndUpdate(req.body.id,{Prev_visit:moment().format(),Next_visit:req.body.next_visit})
+       let a= await book.findOneAndUpdate({_id:req.body.id,status:"pending"},{status:"confirmed"},{new:true})
+       
+      let b=  await patient.findOneAndUpdate({_id:a.patient},{Prev_visit:moment().format(),Next_visit:req.body.next_visit},{new:true})
 
-         let b= await book.findOneAndUpdate({patient:req.body.id,status:"pending"},req.body)
       
+     return  res.status(200).send({Error_Flag:1,message:"Confirmed Successfuly",data:a})
 
-         return res.status(200).send({Error_Flag:1,message:"Confirmed Successfuly"})
+        
+      }
+      
+      
+    } catch (error) {
+      return res.status(400).send({Error_Flag:0,message:error.message})
+
+    }
+    
+ 
+}  
+exports.Cancelreservation=async(req,res)=>{
+    
+    try {
+     
+        let data=await book.findOne({_id:req.body.id,status:"pending"})
+        
+        if(!data){
+            return res.status(200).send({Error_Flag:0,message:"Reservation Not Found"})
+    
+          }
+       else{
+       let a= await book.findOneAndUpdate({_id:req.body.id,status:"pending"},{status:"canceled",deleted:true},{new:true})
+       
+
+       
+      let b=  await patient.findOneAndUpdate({_id:a.patient},{Prev_visit:"",Next_visit:""},{new:true})
+
+      
+     return  res.status(200).send({Error_Flag:1,message:"Canceled Successfuly",data:a})
+
+        
       }
       
       
@@ -370,12 +402,22 @@ exports.Confirmreservation=async(req,res)=>{
 }  
 exports.Getreservations=async(req,res)=>{
     let page=req.query.page;
-  
-     let doc=await book.find().countDocuments()
-       book.find({status:{$regex: req.query.status??"", $options: "i" },
-            cost:{ $gte: req.query.cost??0, $lte: req.query.cost??10000 },
+ 
+    let a
+    let b
+    if(req.query.lte){
+       a= new Date(req.query.lte.replace(" ","+"))
+    } if(req.query.gte){
+        b=new Date(req.query.gte.replace(" ","+"))
+    } 
+    
+
+
+       book.find({updatedAt:{$gte: b??new Date("2000-01-08T08:36:37.725+00:00"), $lte: a??new Date("2100-01-08T08:36:37.725+00:00")},
+           status:{$regex:req.query.status??'',$options:"i"},
+            cost:{$gte: req.query.cost??0, $lte: req.query.cost??10000 },
             name:{$regex:req.query.name??'',$options:"i"}})
-            .select("patient cost status notes created_at updated_at")
+            .select("patient cost status notes updatedAt createdAt")
             .populate('patient',"Name Age Phone")
             .skip((page-1)*items_per_page)
             .limit(items_per_page).exec().then((data)=>{
@@ -384,6 +426,7 @@ exports.Getreservations=async(req,res)=>{
   
                 }
                 else{
+                    console.log(data.length)
                     return res.status(200).send({Error_Flag:0,reservation:data,last_page:Math.ceil(data.length/items_per_page)})
 
                 }
@@ -397,6 +440,12 @@ exports.Getreservations=async(req,res)=>{
         
   
 }
-/* exports.Deletereservation=(req,res)=>{
+exports.Deletereservation=(req,res)=>{
+book.deleteOne({_id:req.body.id},(err,doc)=>{
+ if(err){
+return     res.status(400).send({Error_Flag:1,message:err.message})
 
-} */
+ }
+  return  res.status(200).send({Error_Flag:1,message:"Deleted Successfuly"})
+})
+} 

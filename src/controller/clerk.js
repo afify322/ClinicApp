@@ -72,20 +72,17 @@ clerk.findByIdAndDelete(req.body.id).then((data)=>{
 
 exports.Attended=async(req,res)=>{
     try {
-        let Gname
         if(req.body.attend=="true"){
             //هيعرض الموظفين اللي حضروا الشغل
     
           let attenddata=  await attend.findOne({clerk:req.body.id})
        //   return res.send(attenddata)
-          console.log(moment().day())
           if(attenddata){
             let d=new Date(attenddata.attend_date.toString()).getDay()
     
             if(d!=moment().day()){
                 var nclerk=await clerk.findByIdAndUpdate(req.body.id,{current_status:"Attended"})
-             console.log(nclerk.name)
-                new attend({clerk:req.body.id,attend_date:moment().format(),name:nclerk.name}).save()
+              await  new attend({clerk:req.body.id,attend_date:new Date(moment().format()),name:nclerk.name}).save()
                  return res.status(200).send({Error_Flag:0,message:"Clerk Attended Succcessfuly"})
         
               }
@@ -118,15 +115,14 @@ exports.Attended=async(req,res)=>{
         
                 }
                 else if(d=moment().day()){
-                    if(attenddata.leave_date=='Attended but not left'){
+                    if(!attenddata.leave_date){
                      
                        let a= await clerk.findOne({_id:req.body.id})
-                       console.log(a)
-                        await clerk.findByIdAndUpdate(req.body.id,{current_status:"left",total_hours:a.total_hours+sol})
+                        await clerk.findByIdAndUpdate(req.body.id,{current_status:"left",total_seconds:a.total_seconds+sol})
         
                         await attend.findOneAndUpdate({clerk:req.body.id},{leave_date:moment().format(),seconds_of_work:sol})
             
-                        return res.status(200).send({Error_Flag:0,message:"Clerk left succesfuly",hours_of_work:n})
+                        return res.status(200).send({Error_Flag:0,message:"Clerk left succesfuly",seconds_of_work:sol})
                
                     }
                     else{
@@ -154,10 +150,10 @@ exports.getAttendance=async(req,res)=>{
     await attend.find({attend_date:{$regex: req.query.date??"", $options: "i" },name:{$regex: req.query.name??"", $options: "i" }}).select("clerk attend_date leave_date name").populate("clerk","name age").skip((page-1)*items_per_page).limit(items_per_page).exec()
     .then((data)=>{
         if(!data.length==0){
-         return   res.status(200).send({Error_Flag:0,Attendance:data})
+         return   res.status(200).send({Error_Flag:0,Attendance:data,last_page:Math.ceil(data.length/items_per_page)})
 
         }
-        return   res.status(404).send({Error_Flag:1,message:"Not Found"})
+        return   res.status(200).send({Error_Flag:1,message:"Not Found"})
 
     }).catch((err)=>{
         res.status(400).send({Error_Flag:1,message:err.message})

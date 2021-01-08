@@ -55,10 +55,10 @@ exports.getadmin=(req,res,next)=>{
     const _id=req.query.id
     admin.findById(_id).then((data)=>{
         if(!data){
-          return  res.status(400).send({Error_flag:1,message:"User not found"})
+          return  res.status(200).send({Error_flag:1,message:"User not found"})
         }
       return  res.status(200).send({Error_flag:0,Admin:data})
-    }).catch(err=>res.status(400).send({Error_flag:1,message:"User not found"}))
+    }).catch(err=>res.status(400).send({Error_flag:1,message:err.message}))
 }
 exports.login=async(req,res,next)=>{
     if(req.token){

@@ -30,14 +30,6 @@ const schema=new mongoose.Schema({
     timestamps:true
 })
 
-/* schema.methods.generatetoken=async function(){
-    const user=this;
-    const token=jwt.sign({_id:user._id.toString()},"hello")
-    const is =jwt.verify(token,'hello')
-     user.tokens=user.tokens.concat({token})
-     console.log(user.tokens)
-     await use.save()
-    return token
-} */
+
 
 module.exports=mongoose.model("admins",schema)

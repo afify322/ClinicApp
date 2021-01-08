@@ -1,4 +1,5 @@
 const mongoose=require("mongoose")
+var mongoose_delete = require('mongoose-delete');
 const book=new mongoose.Schema({
     patient:{type:mongoose.Schema.Types.ObjectId,
     ref:'patient'
@@ -16,4 +17,5 @@ const book=new mongoose.Schema({
     
 
 },{timestamps:true})
+book.plugin(mongoose_delete)
 module.exports=mongoose.model('booking',book)

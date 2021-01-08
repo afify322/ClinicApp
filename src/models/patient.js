@@ -3,11 +3,13 @@ const moment=require("moment")
  const schema=new mongoose.Schema({
 Name:{
     type:String,
-    required:true,
-    trim:true
+    required:[true],
+    trim:true,
+    unique:true
+    
 },
 Tests:[{
-    _id:{
+    test:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"test"
     },
@@ -42,7 +44,7 @@ Phone:{
     required:true
 },
 medicines:[{ 
-    _id:{
+    medicine:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"medicine"
     },

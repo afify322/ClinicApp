@@ -24,14 +24,15 @@ next()
 
 
 }
-exports.exist=async(req,res,next)=>{
+/* exports.exist=async(req,res,next)=>{
    patient.findOne({Name:req.body.name.trim()}).then((data)=>{
       if(data){
         return res.status(400).send({Error_Flag:1,message:"Patient Alreeady exist"})
 
       }
       next()
-   }).catch((error)=>{
+   })
+   .catch((error)=>{
       res.status(400).send({Error_Flag:1,message:error.message})
    })
-}
+} */
