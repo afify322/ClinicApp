@@ -58,9 +58,10 @@ medicines:[{
         type:String
     }
 }],
-Notes:{
-    type:String
-},
+smoker:{type:Boolean,
+required:true},
+diabetic:{type:Boolean,
+    required:true},
 Prev_visit:{
     type:Date,
     default:moment().format()

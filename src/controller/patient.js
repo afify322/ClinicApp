@@ -2,20 +2,17 @@ const patient=require("../models/patient")
 const mongoose = require("mongoose");
 const medicine=require("../models/Medicine").medicine
 const test=require("../models/Tests").test
-const cloudinary = require('cloudinary').v2
 const book=require('../models/booking')
 const moment=require("moment")
+const trans=require("../models/finance").transactions;
+const { findById } = require("../models/patient");
 
-cloudinary.config({
-    cloud_name: "dquzcc6kw",
-    api_key: "956728166899899",
-    api_secret: "lgMkP22bTqHWfaY5lxRKybkBMsc"
-  });
+
 const items_per_page=10;
 exports.ADdpatient=(req,res,next)=>{
 
   
-new patient({Name:req.body.name,Age:req.body.age,Phone:req.body.phone,Gender:req.body.gender,Address:req.body.address,Notes:req.body.notes,Prev_visit:req.body.prev_visit,Next_visit:req.body.next_visit}).save().then((data)=>{
+new patient({smoker:req.body.smoker,diabetic:req.body.diabetic,Name:req.body.name,Age:req.body.age,Phone:req.body.phone,Gender:req.body.gender,Address:req.body.address,Notes:req.body.notes,Prev_visit:req.body.prev_visit,Next_visit:req.body.next_visit}).save().then((data)=>{
 
 return res.status(201).send({Error_Flag:0,message:"Patient was created successfuly",patient:data})
 
@@ -45,28 +42,53 @@ exports.Deletepatient=(req,res,next)=>{
 }
 exports.FindPatient=async(req,res,next)=>{
     let page=req.query.page
+            if(req.query.id){
+                patient.findById(req.query.id).select("Name _id Age Phone Gender Address  Prev_visit Next_visit Notes createdAt updatedAt ")
+                .populate("Tests medicines").populate("test medicine","name")
+                .skip((page-1)*items_per_page).limit(items_per_page).exec()
+
+                .then((data)=>{
+                    if(data.length==0){
+                       return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
+          
+                    }
+                    else{
+                       return res.status(200).send({Error_Flag:0,Patients:data,last_page:Math.ceil(data.length/items_per_page)})
+         
+                    }
+                
+                }).catch((err)=>{
+                  return  res.status(400).send({Error_Flag:1,message:err.message})
+                })
+
+
+
+            }
+            else{
+                patient.find({
+                    Name:{$regex: req.query.name??"", $options: "i" },
+                   Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
+                   Gender:{$regex: req.query.gender??"", $options: "i" },
+                   Phone:{$regex: req.query.phone??"", $options: "i" }})
+                   .select("Name _id Age Phone Gender Address  Prev_visit Next_visit Notes createdAt updatedAt ")
+                   .populate("Tests medicines").populate("test medicine","name")
+                   .skip((page-1)*items_per_page).limit(items_per_page).exec()
+                   .then((data)=>{
+                       if(data.length==0){
+                          return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
+             
+                       }
+                       else{
+                          return res.status(200).send({Error_Flag:0,Patients:data,last_page:Math.ceil(data.length/items_per_page)})
             
-           patient.find({Name:{$regex: req.query.name??"", $options: "i" },
-           Age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
-           Gender:{$regex: req.query.gender??"", $options: "i" },
-           Phone:{$regex: req.query.phone??"", $options: "i" }})
-           .select("Name _id Age Phone Gender Address  Prev_visit Next_visit Notes createdAt updatedAt ")
-           .populate("medicines.medicine Tests.test","name")
-           .skip((page-1)*items_per_page).limit(items_per_page).exec()
-           .then((data)=>{
-               if(data.length==0){
-                  return res.status(200).send({Error_Flag:0,Patients:"Not Found"})
-     
-               }
-               else{
-                  return res.status(200).send({rsError_Flag:0,Patients:data,last_page:Math.ceil(data.length/items_per_page)})
-    
-               }
-           
-           }).catch((err)=>{
-               res.status(400).send({Error_Flag:1,message:err.message})
-           })
-      
+                       }
+                   
+                   }).catch((err)=>{
+                      return res.status(400).send({Error_Flag:1,message:err.message})
+                   })
+              
+            }
+         
    
    
 }
@@ -105,7 +127,7 @@ exports.AddMed=async(req,res,next)=>{
 
           let newmed= await new medicine({_id:obj._id,name:obj.name}).save()
         
-         newmed.Patients.push(UserId1)
+         newmed.Patients.push({Patient:UserId1})
           await newmed.save()
       
        let hu=await patient.findOne({_id:req.body.id})
@@ -119,7 +141,7 @@ exports.AddMed=async(req,res,next)=>{
               await pa.save()
 
             let medpa=await medicine.findOne({_id:MedData._id})
-                medpa.Patients.push(UserId1)
+                medpa.Patients.push({Patient:UserId1})
                 await medpa.save()
 
         
@@ -132,17 +154,6 @@ exports.AddMed=async(req,res,next)=>{
          
 }
 exports.AddTest=async(req,res,next)=>{
-      
-   
-/*   
-    if(!req.file){
-        
-        res.status(400).send({Error_Flag:1,message:"Test's image is required"})
-    }
-   else if(!req.file.originalname.match(/\.(png|jpg|jpeg)$/)){
-     res.status(400).send({Error_Flag:1,message:"Invalid image type"})
- }
- else{ */
     try {
         let name=req.body.name
         let date=req.body.date
@@ -164,7 +175,7 @@ exports.AddTest=async(req,res,next)=>{
  
           if(!TestData){    
             let newmed= await new test({_id:obj._id,name:obj.name}).save()   
-           newmed.Patients.push(UserId1)
+           newmed.Patients.push({Patient:UserId1})
             await newmed.save()
             let hu=await patient.findById(UserId)
 
@@ -178,7 +189,7 @@ exports.AddTest=async(req,res,next)=>{
           
   
               let medpa=await test.findOne({_id:TestData._id})
-                  medpa.Patients.push(UserId1)
+                  medpa.Patients.push({Patient:UserId1})
                   await medpa.save()
   
           
@@ -193,11 +204,11 @@ exports.AddTest=async(req,res,next)=>{
 exports.GetMed=async(req,res)=>{
   
     let page=req.query.page
-   if(req.query.getpatient=='true'||!req.query.getpatient){
+   if(!req.query.id){
     try {
         let docs = await medicine.find().countDocuments()
 
-    medicine.find().skip((page-1)*items_per_page).limit(items_per_page).select(" Patients _id name").populate("Patients","Name Age").exec()
+    medicine.find().skip((page-1)*items_per_page).limit(items_per_page).select(" Patients _id name").populate("Patients.Patient","Name").exec()
     .then((data)=>{
         res.status(200).send({Error_Flag:0,medicines:data,last_page:Math.ceil(docs/items_per_page)})
 
@@ -207,72 +218,53 @@ exports.GetMed=async(req,res)=>{
     } catch (err) {
         res.status(400).send({Error_Flag:1,message:err.message})
     }
-   }else if(req.query.getpatient=='false') {
-        try {
-            let docs = await medicine.find().countDocuments()
-    
-        medicine.find()
-        .then((data)=>{
+   }else if(req.query.id) {
+    await medicine.findById(req.query.id).select("_id name Patients").populate("Patients.Patient","Name").exec().then((data)=>{
+        if(data){
+            return res.status(200).send({Error_Flag:0,Medicine:data})
 
-           var reduced = data.reduce(function(filtered,option) {
-           
-               var someNewValue = { name: option.name, _id:option._id }
-               filtered.push(someNewValue);
-            
-            return filtered;
-          }, []);
-            res.status(200).send({Error_Flag:0,medicines:reduced,last_page:Math.ceil(docs/items_per_page)})
-    
-        }).catch((err)=>{
-            res.status(400).send({Error_Flag:1,message:err.message})
-        })
-        } catch (error) {
-            res.status(400).send({Error_Flag:1,message:err.message})
         }
+        return res.status(200).send({Error_Flag:0,Medicine:"Not Found"})
+
+    }).catch((err)=>{
+        res.status(400).send({Error_Flag:1,message:err.message})
+    })
+
     }
     
 }
 exports.GetTests=async(req,res)=>{
     let page=req.query.page
-   if(req.query.getpatient=='true'||!req.query.getpatient){
+    if(req.query.id){
+        await test.findById(req.query.id).select("_id name Patients").populate("Patients.Patient","Name").exec().then((data)=>{
+            if(data){
+                return res.status(200).send({Error_Flag:0,Tests:data})
+   
+            }
+            return res.status(200).send({Error_Flag:0,Tests:"Not Found"})
+ 
+        }).catch((err)=>{
+            res.status(400).send({Error_Flag:1,message:err.message})
+        })
+
+    }
+   else{
     try {
         let docs = await test.find().countDocuments()
-        test.find().skip((page-1)*items_per_page).limit(items_per_page).select("_id name Patients").populate("Patients","Name Age").then((data)=>{
+        test.find().skip((page-1)*items_per_page).limit(items_per_page).select("_id name Patients").populate("Patients.Patient","Name").exec().then((data)=>{
           //  page=+page +1
            
     
-            res.status(200).send({Error_Flag:0,Tests:data,last_page:Math.ceil(docs/items_per_page)})
+           return res.status(200).send({Error_Flag:0,Tests:data,last_page:Math.ceil(docs/items_per_page)})
         }).catch((err)=>{
-            res.status(400).send({Error_Flag:1,message:err.message})
+            return res.status(400).send({Error_Flag:1,message:err.message})
         })  
     } catch (error) {
-        res.status(400).send({Error_Flag:1,message:err.message})
+        return res.status(400).send({Error_Flag:1,message:err.message})
     
     }
    }
-   else if(req.query.getpatient=='false') {
-    try {
-        let docs = await test.find().countDocuments()
-
-    medicine.find()
-    .then((data)=>{
-
-       var reduced = data.reduce(function(filtered,option) {
-       
-           var someNewValue = { name: option.name, _id:option._id }
-           filtered.push(someNewValue);
-        
-        return filtered;
-      }, []);
-        res.status(200).send({Error_Flag:0,medicines:reduced,last_page:Math.ceil(docs/items_per_page)})
-
-    }).catch((err)=>{
-        res.status(400).send({Error_Flag:1,message:err.message})
-    })
-    } catch (error) {
-        res.status(400).send({Error_Flag:1,message:err.message})
-    }
-}
+  
    
 }
 exports.CountMed=(rqe,res)=>{
@@ -352,6 +344,7 @@ exports.Confirmreservation=async(req,res)=>{
           }
        else{
        let a= await book.findOneAndUpdate({_id:req.body.id,status:"pending"},{status:"confirmed"},{new:true})
+        new trans({type:"Revenues",date:moment().format(),cost:a.cost,note:req.body.note}).save()
        
       let b=  await patient.findOneAndUpdate({_id:a.patient},{Prev_visit:moment().format(),Next_visit:req.body.next_visit},{new:true})
 
