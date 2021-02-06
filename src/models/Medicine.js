@@ -1,6 +1,9 @@
 const mongoose=require("mongoose")
 const medicine=new mongoose.Schema({
-    name:String,
+    name:{
+        type:String,
+        required:true
+    },
     Patients:[{
         Patient:{
         type:mongoose.Schema.Types.ObjectId,

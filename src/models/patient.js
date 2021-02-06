@@ -15,13 +15,15 @@ Tests:[{
     },
     name:{
         type:String,
-        trim:true
+        trim:true,
+        required:true
     },
-    path:{
-        type:String
+    images:{
+        type:Array
     },
     date:{
         type:String,
+        required:true
      //   default:moment().format()
     }
     
@@ -49,13 +51,16 @@ medicines:[{
         ref:"medicine"
     },
     date:{
-        type:Date
+        type:Date,
+        required:true
     },
     dose:{
-        type:Date
+        type:Date,
+        required:true
     },
     name:{
-        type:String
+        type:String,
+        required:true
     }
 }],
 smoker:{type:Boolean,

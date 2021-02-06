@@ -35,7 +35,7 @@ res.status(400).send({Error_Flag:1,message:err.message})
 exports.FindClerk=async(req,res)=>{
   
         let page=req.query.page
-        if(!req.query.id){
+     
             try {
                 clerk.find({name:{$regex: req.query.name??"", $options: "i" },
                 age:{ $gte: req.query.age??0, $lte: req.query.age??100 },
@@ -60,25 +60,26 @@ exports.FindClerk=async(req,res)=>{
               return  res.status(400).send({Error_Flag:1,message:error.message})
          
              }
-        }
-        else{
-            clerk.findById(req.query.id).then((data)=>{
-                if(data.length==0){
-                    return res.status(200).send({Error_Flag:0,Clerk:"Not Found"})
-       
-                 }
-                 else{
-                    return res.status(200).send({Error_Flag:0,Clerk:data})
+        
       
-                 }
-             
-             }).catch((error)=>{
-               return  res.status(404).send({Error_Flag:1,message:error.message})
-             
-             })  
-            }
-            
         }
+exports.FindClerkbyid=async(req,res)=>{
+    
+    clerk.findById(req.query.id).then((data)=>{
+        if(data.length==0){
+            return res.status(200).send({Error_Flag:0,Clerk:"Not Found"})
+
+         }
+         else{
+            return res.status(200).send({Error_Flag:0,Clerk:data})
+
+         }
+     
+     }).catch((error)=>{
+       return  res.status(404).send({Error_Flag:1,message:error.message})
+     
+     })  
+}
           
 exports.DeleteClerk=(req,res)=>{
 clerk.findByIdAndDelete(req.body.id).then((data)=>{
@@ -233,7 +234,7 @@ exports.transactions=(req,res)=>{
             return res.status(200).send({Error_Flag:0,transactions:"not found"})
 
         }
-      return  res.status(200).send({Error_Flag:0,transactions:data})
+      return  res.status(200).send({Error_Flag:0,transactions:data,last_page:Math.ceil(data.length/items_per_page)})
     }).catch((err)=>{
        return res.status(400).send({Error_Flag:1,message:err.message})
     })

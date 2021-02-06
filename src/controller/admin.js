@@ -45,10 +45,10 @@ try {
 }
 exports.getadmins=(req,res,next)=>{
     
-   
-    admin.find().then((data)=>{
+   let page=req.query.page
+    admin.find().skip((page-1)*10).limit(10).then((data)=>{
         res.status(200).send({Error_flag:0,Admins:data})
-    }).catch(err=>res.status(400).send({Error_flag:1,message:error.message})
+    }).catch(err=>res.status(400).send({Error_flag:1,message:err.message,last_page:Math.ceil(data.length/10)})
     )
 }
 exports.getadmin=(req,res,next)=>{

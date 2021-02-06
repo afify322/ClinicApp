@@ -1,6 +1,6 @@
 const express=require("express")
 const router=express.Router()
-const multer=require("multer")
+const { body } = require('express-validator');
 const exist=require("../middleware/auth").exist
 const auth=require("../middleware/auth").auth
 const patient=require("../controller/patient").ADdpatient
@@ -21,14 +21,27 @@ const Confirmreservation=require("../controller/patient").Confirmreservation
 const Getreservations=require("../controller/patient").Getreservations
 const Deletereservation=require("../controller/patient").Deletereservation
 const Cancelreservation=require("../controller/patient").Cancelreservation
+const FindpatientByid=require("../controller/patient").FindpatientByid
+const Deletemed=require("../controller/patient").Deletemed
 
+
+router.delete("/Deletemed",Deletemed)
 router.post("/AddPatient",patient)
+router.get("/FindpatientByid",FindpatientByid)
 router.delete("/DeletePatient",Deletepatient)
 router.get("/FindPatient",FindPatient)
 router.patch("/UpdadtePatient",UpdadtePatient)
 router.get("/Count",Count)
 router.post("/AddMed",AddMed)
-router.post("/AddTest",AddTest)
+router.post("/AddTest",/* [
+    body('name')
+      .trim()
+      ,
+    body('content')
+      .trim()
+      .isLength({ min: 5 })
+  ]
+, */AddTest)
 router.get("/GetMed",GetMed)
 router.get("/GetTests",GetTests)
 router.get("/CountMed",CountMed)
