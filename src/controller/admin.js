@@ -16,7 +16,7 @@ exports.signup = async (req, res, next) => {
 
         return admin.findByIdAndUpdate(data._id, { token });
       }).then((data) => admin.findById(data._id)).then((user) => {
-        res.status(201).send({
+        res.status(201).json({
           Error_flag: 0,
           message: 'Created successful',
           user: {
@@ -28,36 +28,36 @@ exports.signup = async (req, res, next) => {
 
       .catch((error) => {
         if (error.message) {
-          res.status(400).send({ Error_flag: 1, message: error.message });
+          res.status(400).json({ Error_flag: 1, message: error.message });
         } else {
-          res.status(400).send({ Error_flag: 1, message: 'Email Already Exist' });
+          res.status(400).json({ Error_flag: 1, message: 'Email Already Exist' });
         }
       });
   } catch (error) {
-    res.status(401).send(error);
+    res.status(401).json(error);
   }
 };
 exports.getadmins = (req, res, next) => {
   const { page } = req.query;
 
   admin.find().skip((page - 1) * 10).limit(10).then((data) => {
-    res.status(200).send({ Error_flag: 0, Admins: data });
+    res.status(200).json({ Error_flag: 0, Admins: data });
   })
-    .catch((err) => res.status(400).send({ Error_flag: 1, message: err.message, last_page: Math.ceil(data.length / 10) }));
+    .catch((err) => res.status(400).json({ Error_flag: 1, message: err.message, last_page: Math.ceil(data.length / 10) }));
 };
 exports.getadmin = (req, res, next) => {
   const _id = req.query.id;
 
   admin.findById(_id).then((data) => {
     if (!data) {
-      return res.status(200).send({ Error_flag: 1, message: 'User not found' });
+      return res.status(200).json({ Error_flag: 1, message: 'User not found' });
     }
-    return res.status(200).send({ Error_flag: 0, Admin: data });
-  }).catch((err) => res.status(400).send({ Error_flag: 1, message: err.message }));
+    return res.status(200).json({ Error_flag: 0, Admin: data });
+  }).catch((err) => res.status(400).json({ Error_flag: 1, message: err.message }));
 };
 exports.login = async (req, res, next) => {
   if (req.token) {
-    return res.status(400).send({ Error_flag: 0, message: 'You Are ALreaedy Logged In !' });
+    return res.status(400).json({ Error_flag: 0, message: 'You Are ALreaedy Logged In !' });
   }
   try {
     const email = req.body.Email;
@@ -68,7 +68,7 @@ exports.login = async (req, res, next) => {
 
     await user.save();
     if (ismatched) {
-      res.status(200).send({
+      res.status(200).json({
         Error_flag: 0,
         message: 'login sucssful',
         user: {
@@ -76,9 +76,9 @@ exports.login = async (req, res, next) => {
         },
         token,
       });
-    } else res.status(400).send({ Error_flag: 0, message: 'Wrong email or password' });
+    } else res.status(400).json({ Error_flag: 0, message: 'Wrong email or password' });
   } catch (error) {
-    res.status(400).send({ Error_flag: 0, message: error.message });
+    res.status(400).json({ Error_flag: 0, message: error.message });
   }
 };
 exports.logout = async (req, res, next) => {
@@ -86,10 +86,10 @@ exports.logout = async (req, res, next) => {
     try {
       req.user.token = null;
       await req.user.save();
-      res.send({ Error_flag: 1, message: 'logout successful' });
+      res.json({ Error_flag: 1, message: 'logout successful' });
     } catch (error) {
-      res.status(400).send({ Error_flag: 1, message: 'please Authintecate' });
+      res.status(400).json({ Error_flag: 1, message: 'please Authintecate' });
     }
   }
-  return res.status(400).send({ Error_flag: 1, message: 'please Authintecate' });
+  return res.status(400).json({ Error_flag: 1, message: 'please Authintecate' });
 };
