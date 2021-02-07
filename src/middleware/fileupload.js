@@ -1,15 +1,12 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const { body,validationResult } = require('express-validator')
 const patient = require('../models/patient');
-const {checkValidationResult,validate} =require('../middleware/validator')
-
 
 cloudinary.config({
-  cloud_name: 'dquzcc6kw',
-  api_key: 956728166899899,
-  api_secret: 'lgMkP22bTqHWfaY5lxRKybkBMsc',
+  cloud_name:process.env.CLOUD_NAME ,
+  api_key:process.env.API_KEY,
+  api_secret: process.env.API_SECRET
 });
 const fileFilter = (req, file, cb) => {
   if(!req.body.date||!req.body.dose||!req.body.id||!req.body.name){
