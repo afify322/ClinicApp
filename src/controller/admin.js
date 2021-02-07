@@ -1,6 +1,3 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const admin = require('../models/admin');
@@ -15,7 +12,7 @@ exports.signup = async (req, res, next) => {
     return await admindata.save()
 
       .then((data) => {
-        const token = jwt.sign({ _id: data._id.toString() }, 'hello');
+        const token = jwt.sign({ _id: data._id.toString() },process.env.SECRET);
 
         return admin.findByIdAndUpdate(data._id, { token });
       }).then((data) => admin.findById(data._id)).then((user) => {
@@ -85,13 +82,16 @@ exports.login = async (req, res, next) => {
   }
 };
 exports.logout = async (req, res, next) => {
-  if (re) {
+  if(req.user.token){
     try {
       req.user.token = null;
       await req.user.save();
       res.send({ Error_flag: 1, message: 'logout successful' });
     } catch (error) {
-      res.status(500).send({ Error_flag: 1, message: error.message });
+      res.status(400).send({ Error_flag: 1, message: 'please Authintecate' });
     }
   }
+  return res.status(400).send({ Error_flag: 1, message: 'please Authintecate' });
+
+   
 };

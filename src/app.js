@@ -17,8 +17,8 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:false})); 
 app.use(compression());
 app.use(cors());
-app.use('/clerk', clerk);
-app.use('/patient', patient);
+app.use('/clerk',auth, clerk);
+app.use('/patient',auth, patient);
 app.use('/Admin', admin);
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
