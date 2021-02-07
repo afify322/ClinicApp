@@ -73,18 +73,18 @@ const schema = new mongoose.Schema({
     required: true,
   },
   Prev_visit: {
-    type: Date
+    type: Date,
   },
   Next_visit: {
     type: Date,
 
   },
-  medical_info:{
-    type:String
+  medical_info: {
+    type: String,
   },
-  medical_issues:{
-    type:String
-  }
+  medical_issues: {
+    type: String,
+  },
 },
 { timestamps: true });
 

@@ -11,7 +11,8 @@ const { Count } = require('../controller/clerk');
 const { salary } = require('../controller/clerk');
 const { Expenses } = require('../controller/clerk');
 const { transactions } = require('../controller/clerk');
-const {finances} =require ('../controller/clerk')
+const { finances } = require('../controller/clerk');
+
 router.get('/GroupFinances', finances);
 router.post('/AddClerk', AddClerk);
 router.patch('/UpdateClerk', UpdateClerk);

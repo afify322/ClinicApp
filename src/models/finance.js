@@ -14,7 +14,7 @@ const transactionsS = new mongoose.Schema({
   cost: Number,
   date: Date,
   note: String,
-  employee_id:{type: mongoose.Schema.Types.ObjectId,ref:"clerk"}
+  employee_id: { type: mongoose.Schema.Types.ObjectId, ref: 'clerk' },
 });
 const transactions = mongoose.model('transactions', transactionsS);
 

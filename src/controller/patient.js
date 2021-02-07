@@ -11,15 +11,15 @@ const items_per_page = 10;
 exports.ADdpatient = (req, res, next) => {
   new patient({
     smoker: req.body.smoker,
-     diabetic: req.body.diabetic,
-      Name: req.body.name,
-       Age: req.body.age,
-        Phone: req.body.phone,
-         Gender: req.body.gender,
-          Address: req.body.address,
-           Notes: req.body.notes,
-             medical_info:req.body.medical_info,
-                medical_issues:req.body.medical_issues
+    diabetic: req.body.diabetic,
+    Name: req.body.name,
+    Age: req.body.age,
+    Phone: req.body.phone,
+    Gender: req.body.gender,
+    Address: req.body.address,
+    Notes: req.body.notes,
+    medical_info: req.body.medical_info,
+    medical_issues: req.body.medical_issues,
   }).save().then((data) => res.status(201).json({ Error_Flag: 0, message: 'Patient was created successfuly', patient: data }))
     .catch(((error) => res.status(400).json({ Error_Flag: 1, message: error.message })));
 };
@@ -69,7 +69,7 @@ exports.FindpatientByid = async (req, res) => {
 
       return res.status(200).json({ Error_Flag: 0, Patient: data });
     })
-    .catch((err) => res.status(400).json({ Error_Flag: 1, message: "Invalid ID" }));
+    .catch((err) => res.status(400).json({ Error_Flag: 1, message: 'Invalid ID' }));
 };
 exports.UpdadtePatient = (req, res, next) => {
   patient.findByIdAndUpdate(req.body.id, req.body, { new: true, runValidators: true })
@@ -90,7 +90,6 @@ exports.Count = (req, res, next) => {
 exports.AddMed = async (req, res, next) => {
   const UserId = req.body.id;
   const UserId1 = mongoose.Types.ObjectId(UserId);
-  
 
   try {
     const obj = {
@@ -109,7 +108,7 @@ exports.AddMed = async (req, res, next) => {
       res.status(200).json({ Error_Flag: 0, message: 'Added Successfuly', Patient: data });
     } else if (MedData) {
       const pa = await patient.findOne({ _id: req.body.id });
-      obj._id=MedData._id
+      obj._id = MedData._id;
       data.medicines.push(obj);
       await data.save();
 
@@ -126,10 +125,10 @@ exports.AddMed = async (req, res, next) => {
 };
 exports.AddTest = async (req, res, next) => {
   try {
-    if (req.files==0 ||!req.files) {
+    if (req.files == 0 || !req.files) {
       return res.status(400).json({ Error_Flag: 1, message: 'Please Upload Image' });
     }
-  
+
     const { name } = req.body;
     const { date } = req.body;
     const UserId = req.body.id;
@@ -390,4 +389,3 @@ exports.Deletereservation = (req, res) => {
     return res.status(200).json({ Error_Flag: 1, message: 'Deleted Successfuly' });
   });
 };
-

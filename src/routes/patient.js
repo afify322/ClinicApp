@@ -24,8 +24,7 @@ const { Cancelreservation } = require('../controller/patient');
 const { FindpatientByid } = require('../controller/patient');
 const { Deletemed } = require('../controller/patient');
 const { parser } = require('../middleware/fileupload');
-const {checkValidationResult,validate} =require('../middleware/validator')
-
+const { checkValidationResult, validate } = require('../middleware/validator');
 
 router.delete('/Deletemed', Deletemed);
 router.post('/AddPatient', patient);
@@ -35,7 +34,7 @@ router.get('/FindPatient', FindPatient);
 router.patch('/UpdadtePatient', UpdadtePatient);
 router.get('/Count', Count);
 router.post('/AddMed', AddMed);
-router.post('/AddTest',parser, AddTest);
+router.post('/AddTest', parser, AddTest);
 router.get('/GetMed', GetMed);
 router.get('/GetTests', GetTests);
 router.get('/CountMed', CountMed);

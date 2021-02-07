@@ -164,8 +164,9 @@ exports.Count = (req, res) => {
   });
 };
 exports.salary = (req, res) => {
-  new salary({ clerid: req.body.clerkid, date: moment().format(), salary: -Math.abs(req.body.salary) }).save().then((data) => 
-  new trans({ type: 'salary', cost: -Math.abs(req.body.salary), date: moment().format(), employee_id: req.body.clerkid}).save()).then((data) => {
+  new salary({ clerid: req.body.clerkid, date: moment().format(), salary: -Math.abs(req.body.salary) }).save().then((data) => new trans({
+    type: 'salary', cost: -Math.abs(req.body.salary), date: moment().format(), employee_id: req.body.clerkid,
+  }).save()).then((data) => {
     res.status(201).send({ Error_Flag: 0, body: data });
   })
     .catch((err) => {
@@ -186,13 +187,14 @@ exports.transactions = (req, res) => {
   const { page } = req.query;
 
   if (req.query.lte) {
-  var  a = new Date(req.query.lte.replace(' ', '+'));
+    var a = new Date(req.query.lte.replace(' ', '+'));
   } if (req.query.gte) {
-  var  b = new Date(req.query.gte.replace(' ', '+'));
+    var b = new Date(req.query.gte.replace(' ', '+'));
   }
 
-  trans.find({ date: { $gte: b ?? new Date('2000-01-08T08:36:37.725+00:00'), $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00') } }).populate("employee_id","name")
-    .skip((page - 1) * items_per_page).limit(items_per_page).exec()
+  trans.find({ date: { $gte: b ?? new Date('2000-01-08T08:36:37.725+00:00'), $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00') } }).populate('employee_id', 'name')
+    .skip((page - 1) * items_per_page).limit(items_per_page)
+    .exec()
     .then((data) => {
       if (data.length == 0) {
         return res.status(200).send({ Error_Flag: 0, transactions: 'not found' });
@@ -201,7 +203,7 @@ exports.transactions = (req, res) => {
     })
     .catch((err) => res.status(400).send({ Error_Flag: 1, message: err.message }));
 };
-exports.finances=async(req,res)=>{
+exports.finances = async (req, res) => {
   const { page } = req.query;
 
   let a;
@@ -209,29 +211,33 @@ exports.finances=async(req,res)=>{
 
   if (req.query.lte) {
     a = new Date(req.query.lte.replace(' ', '+'));
-  } 
+  }
   if (req.query.gte) {
-    b = new Date(req.query.gte.replace(' ', '+'))
+    b = new Date(req.query.gte.replace(' ', '+'));
   }
   try {
+    const result = await trans.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: b ?? new Date('2000-01-08T08:36:37.725+00:00'),
+            $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00'),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
 
-    let result= await  trans.aggregate([
-    { $match:{date:{
-       $gte:b ?? new Date('2000-01-08T08:36:37.725+00:00'),
-       $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00')}}},
-       {
-         $group: {  _id:{ $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-         
-       total : {$sum : "$cost"},
-       transactions_type:{ $push: { type: "$type", cost: "$cost", transaction_id:"$_id" }} }
-     
-      } 
-  
-  
-    ])
-    res.status(200).send({Error_Flag:0,result})
+          total: { $sum: '$cost' },
+          transactions_type: { $push: { type: '$type', cost: '$cost', transaction_id: '$_id' } },
+        },
+
+      },
+
+    ]);
+    res.status(200).send({ Error_Flag: 0, result });
   } catch (error) {
-    res.status(400).send({Error_Flag:1,message:error.message})
+    res.status(400).send({ Error_Flag: 1, message: error.message });
   }
-
-}
+};
