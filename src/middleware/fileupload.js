@@ -9,14 +9,6 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 const fileFilter = (req, file, cb) => {
-  if (!req.body.date || !req.body.dose || !req.body.id || !req.body.name) {
-    cb('date , dose , name and id must be exist and valid ', false);
-  }
-  patient.findById(req.body.id).then((data) => {
-    if (!data) {
-      return new Error('Please enter Valid Id');
-    }
-  }).catch((err) => cb(' Invalid id', false));
 
   if (
     file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
