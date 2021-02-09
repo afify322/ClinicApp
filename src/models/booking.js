@@ -17,6 +17,14 @@ const book = new mongoose.Schema({
   },
 
   name: String,
+  date:{
+    type:Date,
+    required:true
+  },
+  type:{
+    type:String,
+    enum: ['urgent', 'normal'],
+  }
 
 }, { timestamps: true });
 

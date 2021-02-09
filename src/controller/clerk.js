@@ -42,7 +42,7 @@ exports.FindClerk = async (req, res) => {
     })
       .skip((page - 1) * items_per_page).limit(items_per_page).then((data) => {
         if (data.length == 0) {
-          return res.status(200).json({ Error_Flag: 0, Clerks: 'Not Found', data });
+          return res.status(200).json({ Error_Flag: 0, Clerks: 'Not Found' });
         }
 
         return res.status(200).json({ Error_Flag: 0, Clerks: data, last_page: Math.ceil(data.length / items_per_page) });
@@ -54,14 +54,13 @@ exports.FindClerk = async (req, res) => {
 };
 exports.FindClerkbyid = async (req, res) => {
   clerk.findById(req.query.id).then((data) => {
-    if (data.length == 0) {
+    if (!data) {
       return res.status(200).json({ Error_Flag: 0, Clerk: 'Not Found' });
     }
 
     return res.status(200).json({ Error_Flag: 0, Clerk: data });
-  }).catch((error) => res.status(404).json({ Error_Flag: 1, message: error.message }));
+  }).catch((error) => res.status(404).json({ Error_Flag: 1, message: "Invalid ID" }));
 };
-
 exports.DeleteClerk = (req, res) => {
   clerk.findByIdAndDelete(req.body.id).then((data) => {
     res.status(200).json({ Error_Flag: 0, message: 'Clerk Deleted Successfuly' });
@@ -235,8 +234,29 @@ exports.finances = async (req, res) => {
 
       },
 
-    ]);
-    res.status(200).json({ Error_Flag: 0, result });
+    ]).skip((page-1)*10).limit(10).exec();
+    res.status(200).json({ Error_Flag: 0, result,last_page:Math.ceil(result.length/10) });
+  } catch (error) {
+    res.status(400).json({ Error_Flag: 1, message: error.message });
+  }
+};
+exports.totalfinances = async (req,res)=>{
+  const { page } = req.query;
+
+  try {
+    const result = await trans.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$date' } },
+
+          total: { $sum: '$cost' },
+          transactions_type: { $push: { type: '$type', cost: '$cost', transaction_id: '$_id' } },
+        },
+
+      },
+
+    ]).skip((page-1)*10).limit(10).exec();
+    res.status(200).json({ Error_Flag: 0, result,last_page:Math.ceil(result.length/10) });
   } catch (error) {
     res.status(400).json({ Error_Flag: 1, message: error.message });
   }

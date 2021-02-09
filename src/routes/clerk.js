@@ -12,11 +12,16 @@ const { salary } = require('../controller/clerk');
 const { Expenses } = require('../controller/clerk');
 const { transactions } = require('../controller/clerk');
 const { finances } = require('../controller/clerk');
+const {totalfinances} = require('../controller/clerk');
+const { FindClerkbyid } = require('../controller/clerk');
 
+
+router.get('/MonthlyFinances',totalfinances)
 router.get('/GroupFinances', finances);
 router.post('/AddClerk', AddClerk);
 router.patch('/UpdateClerk', UpdateClerk);
 router.get('/FindClerk', FindClerk);
+router.get('/FindClerkById', FindClerkbyid);
 router.delete('/DeleteClerk', DeleteClerk);
 router.patch('/Attended', Attended);
 router.get('/GetAttendance', getAttendance);

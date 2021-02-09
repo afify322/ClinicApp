@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { exist } = require('../middleware/auth');
 const { auth } = require('../middleware/auth');
-const patient = require('../controller/patient').ADdpatient;
+const {Addpatient} = require('../controller/patient');
 const { Deletepatient } = require('../controller/patient');
 const { FindPatient } = require('../controller/patient');
 const { UpdadtePatient } = require('../controller/patient');
@@ -27,7 +27,7 @@ const { parser } = require('../middleware/fileupload');
 const { checkValidationResult, validate } = require('../middleware/validator');
 
 router.delete('/Deletemed', Deletemed);
-router.post('/AddPatient', patient);
+router.post('/AddPatient', Addpatient);
 router.get('/FindpatientByid', FindpatientByid);
 router.delete('/DeletePatient', Deletepatient);
 router.get('/FindPatient', FindPatient);

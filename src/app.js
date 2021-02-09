@@ -10,17 +10,15 @@ const morgan = require('morgan');
 const admin = require('./routes/admin');
 const patient = require('./routes/patient');
 const clerk = require('./routes/clerk');
-
 const port = process.env.PORT || 3000;
 const { auth } = require('./middleware/auth');
-
 app.use(morgan('combined'));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(compression());
 app.use(cors());
-app.use('/clerk', auth, clerk);
-app.use('/patient', auth, patient);
+app.use('/clerk', clerk);
+app.use('/patient', patient);
 app.use('/Admin', admin);
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500;

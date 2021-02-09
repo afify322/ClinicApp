@@ -8,7 +8,7 @@ const trans = require('../models/finance').transactions;
 
 const items_per_page = 10;
 
-exports.ADdpatient = (req, res, next) => {
+exports.Addpatient = (req, res, next) => {
   new patient({
     smoker: req.body.smoker,
     diabetic: req.body.diabetic,
@@ -17,7 +17,6 @@ exports.ADdpatient = (req, res, next) => {
     Phone: req.body.phone,
     Gender: req.body.gender,
     Address: req.body.address,
-    Notes: req.body.notes,
     medical_info: req.body.medical_info,
     medical_issues: req.body.medical_issues,
   }).save().then((data) => res.status(201).json({ Error_Flag: 0, message: 'Patient was created successfuly', patient: data }))
@@ -293,6 +292,7 @@ exports.Deletetest = (req, res) => {
     });
 };
 exports.reservation = async (req, res) => {
+  let date=new Date(req.body.date.replace(' ', '+'))
   try {
     const data = await book.find({ patient: req.body.id, status: 'pending' });
 
@@ -300,9 +300,9 @@ exports.reservation = async (req, res) => {
       return res.status(400).json({ Error_Flag: 1, message: 'Reservation is Alreeady Exist Please Confirm The last one first ' });
     }
 
-    const patientd = await patient.findByIdAndUpdate(req.body.id, { Prev_visit: moment().format() });
+    const Patient = await patient.findByIdAndUpdate(req.body.id, { Prev_visit: date });
     const book1 = await new book({
-      patient: req.body.id, cost: req.body.cost, notes: req.body.notes, status: 'pending', name: patientd.Name,
+      patient: req.body.id, cost: req.body.cost, notes: req.body.notes, status: 'pending', type: req.body.type, date:date , name:Patient.Name
     }).save();
 
     return res.status(201).json({ Error_Flag: 0, reservation: book1 });
@@ -318,8 +318,8 @@ exports.Confirmreservation = async (req, res) => {
       return res.status(200).json({ Error_Flag: 0, message: 'Reservation Not Found' });
     }
 
-    const a = await book.findOneAndUpdate({ _id: req.body.id, status: 'pending' }, { status: 'confirmed' }, { new: true });
-
+    const a = await book.findOneAndUpdate({ _id: req.body.id, status: 'pending' }, { status: 'confirmed'  ,date: moment().format() }, { new: true });
+    console.log(a)
     new trans({
       type: 'Revenues', date: moment().format(), cost: a.cost, note: req.body.note,
     }).save();
@@ -360,14 +360,15 @@ exports.Getreservations = async (req, res) => {
     b = new Date(req.query.gte.replace(' ', '+'));
   }
 
-  book.find({
-    updatedAt: { $gte: b ?? new Date('2000-01-08T08:36:37.725+00:00'), $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00') },
+  book.find( {
+    type:{ $regex: req.query.type ?? '', $options: 'i' },
+    name:{ $regex: req.query.name ?? '', $options: 'i' } ,
+    date: { $gte: b ?? new Date('2000-01-08T08:36:37.725+00:00'), $lte: a ?? new Date('2100-01-08T08:36:37.725+00:00') },
     status: { $regex: req.query.status ?? '', $options: 'i' },
     cost: { $gte: req.query.cost ?? 0, $lte: req.query.cost ?? 10000 },
-    name: { $regex: req.query.name ?? '', $options: 'i' },
-  })
-    .select('patient cost status notes updatedAt createdAt')
-    .populate('patient', 'Name Age Phone')
+  } )
+/*     .select('patient cost status notes updatedAt createdAt')
+ */ .populate('patient', 'Name Age Phone')
     .skip((page - 1) * items_per_page)
     .limit(items_per_page)
     .exec()
@@ -389,3 +390,4 @@ exports.Deletereservation = (req, res) => {
     return res.status(200).json({ Error_Flag: 1, message: 'Deleted Successfuly' });
   });
 };
+
