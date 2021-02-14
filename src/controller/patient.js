@@ -38,7 +38,7 @@ exports.FindPatient = async (req, res, next) => {
   patient.find({
 
     Name: { $regex: req.query.name ?? '', $options: 'i' },
-    Age: { $gte: req.query.age ?? 0, $lte: req.query.age ?? 100 },
+  
     Gender: { $regex: req.query.gender ?? '', $options: 'i' },
     Phone: { $regex: req.query.phone ?? '', $options: 'i' },
   })
