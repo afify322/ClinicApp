@@ -42,7 +42,7 @@ exports.FindPatient = async (req, res, next) => {
     Gender: { $regex: req.query.gender ?? '', $options: 'i' },
     Phone: { $regex: req.query.phone ?? '', $options: 'i' },
   })
-    .select('Name _id Age Phone Gender Address  Prev_visit Next_visit Notes createdAt updatedAt ')
+  
     .populate('Tests ', 'name').populate('medicines', 'name')
     .skip((page - 1) * items_per_page)
     .limit(items_per_page)
