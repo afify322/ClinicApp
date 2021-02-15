@@ -37,10 +37,6 @@ else {
   app.use(bodyparser.json());
   app.use(compression());
   app.use(cors());
-  app.use("/",(req,res,next)=>{
-    console.log(`Worker Process Id - ${cluster.worker.process.pid} has accepted the request!`);
-    next()
-  })
   app.use('/clerk', clerk);
   app.use('/patient', patient);
   app.use('/Admin', admin);
