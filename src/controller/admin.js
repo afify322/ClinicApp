@@ -76,9 +76,9 @@ exports.login = async (req, res, next) => {
         },
         token,
       });
-    } else res.status(400).json({ Error_flag: 0, message: 'Wrong email or password' });
+    } else res.status(400).json({ Error_flag: 1, message: 'Wrong email or password' });
   } catch (error) {
-    res.status(400).json({ Error_flag: 0, message: error.message });
+    res.status(400).json({ Error_flag: 1, message: error.message });
   }
 };
 exports.logout = async (req, res, next) => {
