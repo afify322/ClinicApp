@@ -70,7 +70,7 @@ exports.login = async (req, res, next) => {
     if (ismatched) {
       res.status(200).json({
         Error_flag: 0,
-        message: 'login sucssful',
+        message: 'login successfully',
         user: {
           _id: user._id, name: user.name, Email: user.email, createdAt: user.createdAt, updatedAt: user.updatedAt,
         },
