@@ -31,6 +31,7 @@ else {
   const port = process.env.PORT || 3000;
   const { auth } = require('./middleware/auth');
   const {checkimage}= require('./middleware/fileupload')
+  const {errorHandler}= require('./middleware/ErrorHandling')
 
   app.use(morgan('combined'));
   app.use(bodyparser.urlencoded({ extended: false }));
@@ -40,12 +41,7 @@ else {
   app.use('/clerk', clerk);
   app.use('/patient', patient);
   app.use('/Admin', admin);
-  app.use((error, req, res, next) => {
-    const status = error.statusCode || 500;
-    const { message } = error;
-    const { data } = error;
-    res.status(status).json({ message: error, data });
-  });
+  app.use(errorHandler);
   
   
 
