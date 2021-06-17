@@ -54,7 +54,5 @@ else {
       useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true,
     }).then((data) => {
     app.listen(port);
-  }).catch((err) => {
-    console.log(err);
-  });
+  })
   }
